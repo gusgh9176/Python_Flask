@@ -42,7 +42,11 @@
     </nav>
 
     <div class="container">
-	<div> {{textList}} </div>
+	<div> 
+		{%for i in range(0, len)%}
+			<li>{{textList[i]}} </li>
+		{%endfor%}
+	</div>
 
       <div class="starter-template">
         <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>

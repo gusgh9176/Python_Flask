@@ -51,7 +51,7 @@
 			<input type="submit" value="send" />
 			<input type="reset" value="init" />
 		</form>
-		<div id='View_area' style='position:relative; width: 100px; height: 100px; color: black; border: 0px solid black; dispaly: inline; '></div>
+		<div id='View_area' style='position:relative; width: 500px; height: 500px; color: black; border: 0px solid black; dispaly: inline; '></div>
         <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
       </div>
  
@@ -108,8 +108,8 @@
 			img.id = "prev_" + View_area;
 			img.classList.add("obj");
 			img.file = file;
-			img.style.width = '100px'; 
-			img.style.height = '100px';
+			img.style.width = '500px'; 
+			img.style.height = '500px';
 			preview.appendChild(img);
 			if (window.FileReader) { // FireFox, Chrome, Opera 확인.
 				var reader = new FileReader();

@@ -45,8 +45,8 @@
       <div class="starter-template">
         <h1>ChangeTextInImage</h1>
 		<form method="POST" action="/processing" enctype = "multipart/form-data">
-			<h1> Image Input </h1>
-			<input type="file" name="file" value="None" onchange="previewImage(this,'View_area')"><br>
+			<h1 id="main_text"> Image Input </h1>
+			<input type="file" name="file" value="None" onchange="previewImage(this,'View_area') onclick=waiting()"><br>
 			<input type="submit" value="send" />
 			<input type="reset" value="init" />
 		</form>
@@ -131,5 +131,9 @@
 		}
 	}
 }
+	function waiting(){
+		document.getElementById("main_text").innerHTML = "Processing...;
+	}
+	
 	</script>
 </body></html>

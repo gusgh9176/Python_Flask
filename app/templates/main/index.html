@@ -47,7 +47,7 @@
         <h1>ChangeTextInImage</h1>
 		<form method="POST" action="/processing" enctype = "multipart/form-data">
 			<h1> Image Input </h1>
-			<input type="file" name="file" value="None" onchange="previewImage(this,'View_area')><br>
+			<input type="file" name="file" value="None" onchange="previewImage(this,'View_area')"><br>
 			<input type="submit" value="send" />
 			<input type="reset" value="init" />
 		</form>
@@ -68,6 +68,32 @@
 	var preview = document.getElementById(View_area); //div id
 	var ua = window.navigator.userAgent;
 
+  //ie일때(IE8 이하에서만 작동)
+	if (ua.indexOf("MSIE") > -1) {
+		targetObj.select();
+		try {
+			var src = document.selection.createRange().text; // get file full path(IE9, IE10에서 사용 불가)
+			var ie_preview_error = document.getElementById("ie_preview_error_" + View_area);
+
+
+			if (ie_preview_error) {
+				preview.removeChild(ie_preview_error); //error가 있으면 delete
+			}
+
+			var img = document.getElementById(View_area); //이미지가 뿌려질 곳
+
+			//이미지 로딩, sizingMethod는 div에 맞춰서 사이즈를 자동조절 하는 역할
+			img.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='"+src+"', sizingMethod='scale')";
+		} catch (e) {
+			if (!document.getElementById("ie_preview_error_" + View_area)) {
+				var info = document.createElement("<p>");
+				info.id = "ie_preview_error_" + View_area;
+				info.innerHTML = e.name;
+				preview.insertBefore(info, null);
+			}
+		}
+  //ie가 아닐때(크롬, 사파리, FF)
+	} else {
 		var files = targetObj.files;
 		for ( var i = 0; i < files.length; i++) {
 			var file = files[i];
@@ -93,8 +119,18 @@
 					};
 				})(img);
 				reader.readAsDataURL(file);
+			} else { // safari is not supported FileReader
+				//alert('not supported FileReader');
+				if (!document.getElementById("sfr_preview_error_"
+						+ View_area)) {
+					var info = document.createElement("p");
+					info.id = "sfr_preview_error_" + View_area;
+					info.innerHTML = "not supported FileReader";
+					preview.insertBefore(info, null);
+				}
 			}
 		}
 	}
+}
 	</script>
 </body></html>

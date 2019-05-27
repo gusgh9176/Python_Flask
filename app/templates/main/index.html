@@ -47,10 +47,11 @@
         <h1>ChangeTextInImage</h1>
 		<form method="POST" action="/processing" enctype = "multipart/form-data">
 			<h1> Image Input </h1>
-			<input type="file" name="file" value="None"><br>
+			<input type="file" name="file" value="None" onchange="previewImage(this,'View_area')><br>
 			<input type="submit" value="send" />
 			<input type="reset" value="init" />
 		</form>
+		<div id='View_area' style='position:relative; width: 100px; height: 100px; color: black; border: 0px solid black; dispaly: inline; '></div>
         <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
       </div>
  
@@ -62,5 +63,38 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
- 
+	<script>
+	function previewImage(targetObj, View_area) {
+	var preview = document.getElementById(View_area); //div id
+	var ua = window.navigator.userAgent;
+
+		var files = targetObj.files;
+		for ( var i = 0; i < files.length; i++) {
+			var file = files[i];
+			var imageType = /image.*/; //이미지 파일일경우만.. 뿌려준다.
+			if (!file.type.match(imageType))
+				continue;
+			var prevImg = document.getElementById("prev_" + View_area); //이전에 미리보기가 있다면 삭제
+			if (prevImg) {
+				preview.removeChild(prevImg);
+			}
+			var img = document.createElement("img"); 
+			img.id = "prev_" + View_area;
+			img.classList.add("obj");
+			img.file = file;
+			img.style.width = '100px'; 
+			img.style.height = '100px';
+			preview.appendChild(img);
+			if (window.FileReader) { // FireFox, Chrome, Opera 확인.
+				var reader = new FileReader();
+				reader.onloadend = (function(aImg) {
+					return function(e) {
+						aImg.src = e.target.result;
+					};
+				})(img);
+				reader.readAsDataURL(file);
+			}
+		}
+	}
+	</script>
 </body></html>

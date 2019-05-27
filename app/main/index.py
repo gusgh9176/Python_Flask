@@ -207,6 +207,7 @@ def process():
             img = request.files['file']
 
             if img and allowed_file(img.filename):
+                  # 이미지 변수에 저장
                   img.save('./temp_src/' + secure_filename(img.filename))
                   src=cv2.imread('./temp_src/'+secure_filename(img.filename), cv2.IMREAD_UNCHANGED)
                   os.remove('./temp_src/'+secure_filename(img.filename))
@@ -214,14 +215,10 @@ def process():
                   image_List = []
                   # rectangle 배열
                   rect_List = []
-                  # 이미지 변수에 저장
 
                   # drawContours 가 원본이미지를 변경하기에 이미지 복사
                   img1 = src.copy()  # 처음 Contours 그려짐
                   img2 = src.copy()  # Rectangle Contours 그려짐
-                  img3 = src.copy()  # check
-
-                  # In[90]:
 
                   # CannyEdge
                   canny = change1(src)
@@ -260,8 +257,7 @@ def process():
                               image_List.append(dst_gray)
 
                   for r1 in rect_List:
-                        img = cv2.rectangle(img3, (r1.x1, r1.y1), (r1.x2, r1.y2), (0, 0, 0), 1)
-
+                        img2 = cv2.rectangle(img2, (r1.x1, r1.y1), (r1.x2, r1.y2), (0, 0, 0), 1)
                   # cv2.imshow("check1", img3)
                   # cv2.waitKey(0)
 
@@ -270,7 +266,6 @@ def process():
                   json_file.close()
                   loaded_model = model_from_json(loaded_model_json)
                   loaded_model.load_weights("model.h5")
-                  print("Loaded model from disk")
                   loaded_model.compile(loss="binary_crossentropy", optimizer="adam", metrics=['accuracy'])
 
                   # 모델에 맞게 inputdata를 reform
@@ -302,16 +297,54 @@ def process():
                               text_image_List.append(dst)
 
                   for r1 in text_rect_List:
-                        img = cv2.rectangle(img3, (r1.x1, r1.y1), (r1.x2, r1.y2), (255, 0, 0), 5)
-
-                  # cv2.imshow("check1", img3)
+                      img2 = cv2.rectangle(img2, (r1.x1, r1.y1), (r1.x2, r1.y2), (255, 0, 0), 3)
+                  # cv2.imshow("말풍선 판별", img2)
                   # cv2.waitKey(0)
+                  print("step1 : 말풍선 위치 추출 완료")
 
-                  # In[93]:
+                  text_rect_List2 = []
+                  text_image_List2 = []
+                  i = 0
+                  for r1 in text_rect_List:
+                      if (r1.live == 1):
+                          dst = src[r1.y1:r1.y2, r1.x1:r1.x2]
+                          # cv2.imshow("temp", dst)
+                          # cv2.waitKey(0)
+                          j = 0
+                          for r2 in text_rect_List:
+                              if ((r2.live == 1) and (r1.live == 1) and (i != j)):
+                                  if (((r1.y1 < r2.y2) and (r1.y2 > r2.y1)) and ((r1.x1 < r2.x2) and (r1.x2 > r2.x1))):
+                                      if (((min(r1.y2, r2.y2) - max(r1.y1, r2.y1)) > (r1.y2 - r1.y1) * 0.7) and (
+                                              (min(r1.x2, r2.x2) - max(r1.x1, r2.x1)) > (r1.y2 - r1.y1) * 0.7)):
+                                          r1.live = 0
+                                          r2.x1 = min(r1.x1, r2.x1)
+                                          r2.x2 = max(r1.x2, r2.x2)
+                                          r2.y1 = min(r1.y1, r2.y1)
+                                          r2.y2 = max(r1.y2, r2.y2)
+                              j = j + 1
+                      i = i + 1
+
+                  for r1 in text_rect_List:
+                      if (r1.live == 1):
+                          text_rect_List2.append(r1)
+                          img2 = cv2.rectangle(img2, (r1.x1, r1.y1), (r1.x2, r1.y2), (0, 255, 0), 3)
+
+                  text_rect_List2.reverse()
+                  for r1 in text_rect_List2:
+                      dst = src[r1.y1:r1.y2, r1.x1:r1.x2]
+                      text_image_List2.append(dst)
+
+                  img2 = cv2.pyrDown(img2)
+                  img2 = cv2.pyrDown(img2)
+                  #cv2.imshow("blue=Abandoned  green=save", img2)
+                  #cv2.waitKey(0)
+
+                  print("step2 : 중복 제거 완료")
+
 
                   count = 0
                   # 이미지 변수에 저장
-                  for image in text_image_List:
+                  for image in text_image_List2:
                         # 텐서플로우에 전달할 이미지를 저장할 배열
                         # rectangle 배열
                         combine_image_List = []
@@ -422,10 +455,11 @@ def process():
 
                         # cv2.imshow("check2", combine_img2)
                         # cv2.waitKey(0)
+                  print("step3 : 문단 위치 추출 완료")
 
                   path_dir = './temp_image/'
                   temp_image = os.listdir(path_dir)
-                  temp_image.sort()
+                  temp_image.sort(key=len)
 
                   final_text = []
                   final_temp=''
@@ -446,10 +480,11 @@ def process():
                         en_var = translator.translate(outText, dest='ko')
 
                         final_temp = final_temp + "-->\n" + en_var.text
+
                         final_text.append(final_temp)
                         # 처리 이후 임시 파일 삭제
                         os.remove(path + t_image)
-
+                  print("step4 : 글자 추출, 번역 완료")
                   return render_template('/main/result.html', textList = final_text, len=len(final_text))
       
 

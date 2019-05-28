@@ -260,7 +260,6 @@ def process():
                         img2 = cv2.rectangle(img2, (r1.x1, r1.y1), (r1.x2, r1.y2), (0, 0, 0), 1)
                   # cv2.imshow("check1", img3)
                   # cv2.waitKey(0)
-
                   json_file = open("model.json", "r")
                   loaded_model_json = json_file.read()
                   json_file.close()
@@ -408,7 +407,6 @@ def process():
                         '''
 
                         # ln[93]:
-
                         json_file = open("model2.json", "r")
                         loaded_model_json = json_file.read()
                         json_file.close()
@@ -445,6 +443,7 @@ def process():
                                     dst = combine_src[combine_rect_List[i].y1 - 5:combine_rect_List[i].y2,
                                           combine_rect_List[i].x1:combine_rect_List[i].x2]
                                     cv2.imwrite('./temp_image/' + str(count) + '.jpg', dst)
+
                                     count = count + 1
                                     p_rect_List.append(rectang(combine_rect_List[i].x1, combine_rect_List[i].y1,
                                                                combine_rect_List[i].x2, combine_rect_List[i].y2))
@@ -482,8 +481,10 @@ def process():
                         final_temp = final_temp + "-->\n" + en_var.text
 
                         final_text.append(final_temp)
-                        # 처리 이후 임시 파일 삭제
-                        os.remove(path + t_image)
+
+                  for i in range(0, count):
+                      # 처리 이후 임시 파일 삭제
+                      os.remove(path + str(i)+'.jpg')
                   print("step4 : 글자 추출, 번역 완료")
                   return render_template('/main/result.html', textList = final_text, len=len(final_text))
       

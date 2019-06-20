@@ -14,6 +14,7 @@ from PIL import Image     #pip install pillow
 from pytesseract import * #pip install pytesseract
 import configparser
 from googletrans import Translator
+from keras import backend as K
 
 translator=Translator()
 # 추가할 모듈이 있다면 추가
@@ -207,6 +208,7 @@ def process():
             img = request.files['file']
 
             if img and allowed_file(img.filename):
+                  K.clear_session()
                   # 이미지 변수에 저장
                   img.save('./temp_src/' + secure_filename(img.filename))
                   src=cv2.imread('./temp_src/'+secure_filename(img.filename), cv2.IMREAD_UNCHANGED)
@@ -455,32 +457,34 @@ def process():
                         # cv2.imshow("check2", combine_img2)
                         # cv2.waitKey(0)
                   print("step3 : 문단 위치 추출 완료")
+                  try:
+                      path_dir = './temp_image/'
+                      temp_image = os.listdir(path_dir)
+                      temp_image.sort(key=len)
 
-                  path_dir = './temp_image/'
-                  temp_image = os.listdir(path_dir)
-                  temp_image.sort(key=len)
+                      final_text = []
+                      final_temp=''
 
-                  final_text = []
-                  final_temp=''
+                      for t_image in temp_image:
+                            final_temp=''
+                            path = './temp_image/'
+                            img = Image.open(path + t_image)
 
-                  for t_image in temp_image:
-                        final_temp=''
-                        path = './temp_image/'
-                        img = Image.open(path + t_image)
+                            fileName = str(i)
+                            outText = image_to_string(img, lang='eng')
+                            outText = outText.lower()
+                            if(outText==''):
+                                continue
+                            final_temp = final_temp + "(" + t_image + ") >>\n" + outText + "\n"
 
-                        fileName = str(i)
-                        outText = image_to_string(img, lang='eng')
-                        outText = outText.lower()
-                        if(outText==''):
-                            continue
-                        final_temp = final_temp + "(" + t_image + ") >>\n" + outText + "\n"
+                            outText = outText.replace('\n', ' ')
+                            en_var = translator.translate(outText, dest='ko')
 
-                        outText = outText.replace('\n', ' ')
-                        en_var = translator.translate(outText, dest='ko')
+                            final_temp = final_temp + "-->\n" + en_var.text
 
-                        final_temp = final_temp + "-->\n" + en_var.text
-
-                        final_text.append(final_temp)
+                            final_text.append(final_temp)
+                  except:
+                      print(".")
 
                   for i in range(0, count):
                       # 처리 이후 임시 파일 삭제
